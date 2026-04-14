@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epic Name Generator</title>
+    
+    <link rel="icon" href="icon.jpg" type="image/jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    :root {
+        --accent-primary: #a855f7;
+        --accent-secondary: #22d3ee;
+        --accent-gradient: linear-gradient(135deg, #a855f7 0%, #22d3ee 100%);
+        --bg-main: #06080a;
+        --bg-gradient: radial-gradient(circle at top right, #1a1025, #06080a);
+        --glass-bg: rgba(255, 255, 255, 0.02);
+        --glass-border: rgba(168, 85, 247, 0.2);
+        --text-main: #ffffff;
+        --text-dim: #94a3b8;
+        --blur-val: 20px;
+        --font-main: 'Inter', sans-serif;
+    }
+
+    /* ENTER SCREEN STYLE */
+    #enter-screen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; z-index: 9999; display: flex; flex-direction: column;
+        justify-content: center; align-items: center; cursor: pointer;
+        transition: opacity 1s ease, visibility 1s;
+    }
+    #enter-screen.fade-out { opacity: 0; visibility: hidden; }
+    .glitch-text-enter { font-size: 2rem; font-weight: 800; color: #fff; letter-spacing: 5px; text-transform: uppercase; animation: pulseEnter 1.5s infinite; }
+    @keyframes pulseEnter { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+
+    /* THEME DEFINITIONEN */
+    [data-theme="cyber-neon"] { --accent-primary: #ff00ff; --accent-secondary: #00ffff; --accent-gradient: linear-gradient(135deg, #ff00ff 0%, #00ffff 100%); --bg-main: #0a0a0a; --bg-gradient: linear-gradient(180deg, #0a0a0a 0%, #1a0033 100%); --glass-border: rgba(255, 0, 255, 0.3); }
+    [data-theme="midnight-purple"] { --accent-primary: #6366f1; --accent-secondary: #a855f7; --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); --bg-main: #020617; --bg-gradient: radial-gradient(circle at bottom left, #1e1b4b, #020617); }
+    [data-theme="emerald"] { --accent-primary: #10b981; --accent-secondary: #34d399; --accent-gradient: linear-gradient(135deg, #059669 0%, #34d399 100%); --bg-main: #060a08; --bg-gradient: radial-gradient(circle at top, #064e3b, #060a08); }
+    [data-theme="vampire"] { --accent-primary: #ef4444; --accent-secondary: #991b1b; --accent-gradient: linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%); --bg-main: #0a0000; --bg-gradient: radial-gradient(circle, #2a0000, #0a0000); }
+    [data-theme="ocean"] { --accent-primary: #0ea5e9; --accent-secondary: #7dd3fc; --accent-gradient: linear-gradient(135deg, #0ea5e9 0%, #7dd3fc 100%); --bg-main: #082f49; --bg-gradient: linear-gradient(to bottom, #0c4a6e, #082f49); }
+    [data-theme="gold"] { --accent-primary: #f59e0b; --accent-secondary: #fef08a; --accent-gradient: linear-gradient(135deg, #b45309 0%, #f59e0b 50%, #fef08a 100%); --bg-main: #0f0a00; --bg-gradient: radial-gradient(circle, #291a00, #0f0a00); }
+    [data-theme="matrix"] { --accent-primary: #22c55e; --accent-secondary: #4ade80; --accent-gradient: linear-gradient(135deg, #15803d 0%, #4ade80 100%); --bg-main: #000500; --bg-gradient: linear-gradient(180deg, #001a00 0%, #000000 100%); }
+    [data-theme="sakura"] { --accent-primary: #f472b6; --accent-secondary: #fce7f3; --accent-gradient: linear-gradient(135deg, #db2777 0%, #f472b6 100%); --bg-main: #1a0b12; --bg-gradient: radial-gradient(circle, #3d1627, #1a0b12); }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font-main); background: var(--bg-main); background-image: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; overflow-y: auto; }
+
+    .sidebar { width: 70px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(var(--blur-val)); display: flex; flex-direction: column; align-items: center; padding-top: 30px; border-right: 1px solid var(--glass-border); z-index: 10; position: sticky; top: 0; height: 100vh; }
+    .sidebar button { width: 45px; height: 45px; margin-bottom: 20px; border-radius: 12px; border: none; background: transparent; color: var(--text-dim); font-size: 20px; cursor: pointer; transition: 0.3s; }
+    .sidebar button:hover { color: var(--accent-secondary); background: rgba(168, 85, 247, 0.1); transform: scale(1.1); }
+
+    .container { flex: 1; padding: 40px; display: flex; align-items: center; justify-content: center; }
+    .page { display: none; width: 100%; max-width: 850px; animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); margin: auto; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .active { display: block; }
+    .card { background: var(--glass-bg); backdrop-filter: blur(var(--blur-val)); border: 1px solid var(--glass-border); border-radius: 30px; padding: 40px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+    
+    h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 10px; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    h2 { font-weight: 600; color: var(--accent-secondary); text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px; }
+
+    .settings-group { text-align: left; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; border: 1px solid var(--glass-border); }
+    .settings-label { display: block; font-weight: 600; margin-bottom: 15px; color: var(--accent-secondary); }
+    .theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+    .theme-btn { padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; cursor: pointer; transition: 0.3s; font-weight: 500; font-size: 0.85rem; }
+    .theme-btn:hover { border-color: var(--accent-secondary); background: rgba(168, 85, 247, 0.1); }
+    .toggle-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+    .symbol-grid { background: rgba(0, 0, 0, 0.3); padding: 25px; border-radius: 20px; border: 1px solid var(--glass-border); display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-top: 20px; }
+    .symbol-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(168, 85, 247, 0.1); padding: 15px; border-radius: 15px; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+    .symbol-item:hover { background: rgba(168, 85, 247, 0.1); border-color: var(--accent-secondary); transform: translateY(-3px); }
+    .symbol-char { font-size: 1.6rem; color: var(--accent-secondary); font-weight: bold; pointer-events: none; }
+    .symbol-desc { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; pointer-events: none; }
+
+    textarea, select { width: 100%; background: #0c0e12; color: var(--accent-secondary); border: 1px solid var(--glass-border); border-radius: 18px; padding: 15px; outline: none; margin-top: 10px; font-family: inherit; appearance: none; }
+    .link-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; padding: 14px 28px; margin: 8px; border-radius: 15px; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 12px; font-weight: 600; text-decoration: none; }
+    .link-btn:hover { background: var(--accent-gradient); color: #000; transform: translateY(-3px); }
+
+    .status-bar { display: flex; justify-content: space-between; font-size: 0.75rem; margin-top: 8px; padding: 0 10px; color: var(--text-dim); }
+    .status-ok { color: #22c55e; } .status-warn { color: #ef4444; }
+    .quick-actions { display: flex; gap: 10px; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
+    .action-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-dim); padding: 5px 12px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+    .action-btn:hover { background: var(--accent-secondary); color: #000; }
+    .preview-box { background: rgba(0,0,0,0.4); border-radius: 15px; padding: 20px; margin-top: 20px; border: 1px dashed var(--glass-border); position: relative; }
+    .preview-label { position: absolute; top: 5px; right: 10px; font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; }
+    .preview-text { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.2rem; color: #fff; }
+    
+    #copy-toast { position: fixed; bottom: 30px; right: 30px; background: var(--accent-gradient); color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 700; opacity: 0; transform: translateY(100px); transition: 0.4s; z-index: 100; }
+    #copy-toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+
+<body>
+
+<div id="enter-screen" onclick="closeEnterScreen()">
+    <div class="glitch-text-enter">MADE WITH LOVE❤️</div>
+    <p style="color: var(--accent-secondary); margin-top: 15px; font-size: 0.8rem; font-family: monospace;">by zukan</p>
+    <p style="color: var(--accent-secondary); margin-top: 15px; font-size: 0.8rem; font-family: monospace;">V 1.0</p>
+</div>
+
+<nav class="sidebar">
+    <button onclick="showPage('home')" title="Home"><i class="fas fa-home"></i></button>
+    <button onclick="showPage('glitch')" title="Glitcher"><i class="fas fa-terminal"></i></button>
+    <button onclick="showPage('russian')" title="Russian"><i class="fas fa-language"></i></button>
+    <button onclick="showPage('symbols')" title="Symbols"><i class="fas fa-star"></i></button>
+    <button onclick="showPage('invisible')" title="Invisible"><i class="fas fa-ghost"></i></button>
+    <div style="flex-grow: 1;"></div>
+    <button onclick="showPage('settings')" title="Settings"><i class="fas fa-cog"></i></button>
+</nav>
+
+<div id="copy-toast">Kopiert!</div>
+
+<main class="container">
+
+    <div id="home" class="page">
+        <div class="card">
+            <h2>System Ready</h2>
+            <h1>💫 Epic Name Generator</h1>
+            <p style="color: var(--text-dim);">Professional tool for Epic Games names.<br>Safe and optimized.</p>
+            <div style="margin-top: 30px;">
+                <button class="link-btn" onclick="openLink('https://dsc.gg/zukan')"><i class="fab fa-discord"></i> Discord</button>
+                <button class="link-btn" onclick="openLink('https://t.me/todschlag')"><i class="fab fa-telegram"></i> Telegram</button>
+                <button class="link-btn" onclick="openLink('https://haunt.gg/6')"><i class="fas fa-globe"></i> Website</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="glitch" class="page">
+        <div class="card">
+            <h2>Module: Glitcher</h2>
+            <h1>Text Tool</h1>
+            <select id="mark" onchange="updateText()">
+                <option value="ﱢ">V1 - Subtle Glitch</option>
+                <option value="ﱞ" selected>V2 - Standard Glitch</option>
+                <option value="ﱡ">V3 - Heavy Glitch</option>
+            </select>
+            <textarea id="input" oninput="updateText()" placeholder="Type here..."></textarea>
+            
+            <div class="status-bar">
+                <span id="char-count">Length: 0</span>
+                <span id="epic-status">Epic Games: OK</span>
+            </div>
+
+            <div class="quick-actions">
+                <button class="action-btn" onclick="transformText('upper')">UPPERCASE</button>
+                <button class="action-btn" onclick="transformText('lower')">lowercase</button>
+                <button class="action-btn" onclick="transformText('sponge')">sPoNgEbOb</button>
+                <button class="action-btn" onclick="transformText('reverse')"><i class="fas fa-exchange-alt"></i> REVERSE</button>
+            </div>
+
+            <textarea id="output" readonly placeholder="Result will appear..."></textarea>
+            
+            <div class="preview-box">
+                <span class="preview-label">Ingame Preview</span>
+                <div id="preview-display" class="preview-text">Preview</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="russian" class="page">
+        <div class="card">
+            <h2>Module: Bypass</h2>
+            <h1>Russian</h1>
+            <div class="symbol-grid" style="grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));">
+                <div class="symbol-item" onclick="copyToClipboard('а', this)"><span class="symbol-char">а</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('е', this)"><span class="symbol-char">е</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('о', this)"><span class="symbol-char">о</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('А', this)"><span class="symbol-char">А</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('Е', this)"><span class="symbol-char">Е</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('О', this)"><span class="symbol-char">О</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('В', this)"><span class="symbol-char">В</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('Н', this)"><span class="symbol-char">Н</span></div>
+            </div>
+            <div style="margin-top: 30px;">
+                <button class="link-btn" onclick="openLink('https://tools.picsart.com/text/font-generator/')">Picsart</button>
+                <button class="link-btn" onclick="openLink('https://lingojam.com/FancyTextGenerator')">Lingojam</button>
+                <button class="link-btn" onclick="openLink('https://www.lexilogos.com/keyboard/russian.htm')">Lexilogos</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="symbols" class="page">
+        <div class="card">
+            <h2>Module: Special</h2>
+            <h1>Symbols</h1>
+            <div class="symbol-grid">
+                <div class="symbol-item" onclick="copyToClipboard('ǃ', this)"><span class="symbol-char">ǃ</span><span class="symbol-desc">Exclamation</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ᵎǃᵎ', this)"><span class="symbol-char">ᵎǃᵎ</span><span class="symbol-desc">3 Exclamations</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ʺ', this)"><span class="symbol-char">ʺ</span><span class="symbol-desc">QUOTATION MARKS</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ʼ', this)"><span class="symbol-char">ʼ</span><span class="symbol-desc">APOSTROPHE</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ﾈ', this)"><span class="symbol-char">ﾈ</span><span class="symbol-desc">Katakana Ne</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ﾎ', this)"><span class="symbol-char">ﾎ</span><span class="symbol-desc">Katakana Ho</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ﷺ', this)"><span class="symbol-char">ﷺ</span><span class="symbol-desc">Arabic</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('愛', this)"><span class="symbol-char">愛</span><span class="symbol-desc">Love</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ʚïɞ', this)"><span class="symbol-char">ʚïɞ</span><span class="symbol-desc">Butterfly</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ʚĭɞ', this)"><span class="symbol-char">ʚĭɞ</span><span class="symbol-desc">Butterfly</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ⓐⓢשًٍّⓐⓢ', this)"><span class="symbol-char">ⓐⓢשًٍّⓐⓢ</span><span class="symbol-desc">Upside Down Cross</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ⓐⓢשًٍّⓐⓢ', this)"><span class="symbol-char">ⓐⓢשًٍّⓐⓢ</span><span class="symbol-desc">Normal Cross</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('ⓐⓢשًٍّⓐⓢ', this)"><span class="symbol-char">ⓐⓢשًٍّⓐⓢ</span><span class="symbol-desc">Long Cross</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="invisible" class="page">
+        <div class="card">
+            <h2>Module: Hidden</h2>
+            <h1>Invisible</h1>
+            <div class="symbol-grid">
+                <div class="symbol-item" onclick="copyToClipboard('ㅤ', this)"><span class="symbol-char">ㅤ</span><span class="symbol-desc">Hangul Filler</span></div>
+                <div class="symbol-item" onclick="copyToClipboard('⠀', this)"><span class="symbol-char">⠀</span><span class="symbol-desc">Braille Blank</span></div>
+                <div class="symbol-item" onclick="copyToClipboard(' ', this)"><span class="symbol-char"> </span><span class="symbol-desc">Hair Space</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings" class="page">
+        <div class="card">
+            <h2>Config</h2>
+            <h1>⚙️ Settings</h1>
+            <div class="settings-group">
+                <span class="settings-label">Design Theme</span>
+                <div class="theme-grid">
+                    <button class="theme-btn" onclick="setTheme('default')">Dark Purple</button>
+                    <button class="theme-btn" onclick="setTheme('cyber-neon')">Cyber Neon</button>
+                    <button class="theme-btn" onclick="setTheme('midnight-purple')">Midnight</button>
+                    <button class="theme-btn" onclick="setTheme('emerald')">Emerald</button>
+                    <button class="theme-btn" onclick="setTheme('vampire')">Vampire Red</button>
+                    <button class="theme-btn" onclick="setTheme('ocean')">Ocean Blue</button>
+                    <button class="theme-btn" onclick="setTheme('gold')">Gold Edition</button>
+                    <button class="theme-btn" onclick="setTheme('matrix')">Matrix</button>
+                    <button class="theme-btn" onclick="setTheme('sakura')">Sakura</button>
+                </div>
+            </div>
+            <div class="settings-group">
+                <span class="settings-label">Appearance</span>
+                <div class="toggle-group"><span>Show Notifications</span><input type="checkbox" id="toast-toggle" checked onchange="saveSettings()"></div>
+                <div class="toggle-group"><span>Enable Animations</span><input type="checkbox" id="anim-toggle" checked onchange="toggleAnimations()"></div>
+                <div class="toggle-group"><span>Auto-Copy Glitch</span><input type="checkbox" id="autocopy-toggle" onchange="saveSettings()"></div>
+            </div>
+            <div class="settings-group">
+                <span class="settings-label">Typography</span>
+                <select id="font-select" onchange="applyFont(this.value); saveSettings();">
+                    <option value="'Inter', sans-serif">Inter (Standard)</option>
+                    <option value="'JetBrains Mono', monospace">JetBrains Mono (Hacker)</option>
+                    <option value="'Space Grotesk', sans-serif">Space Grotesk (Modern)</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <span class="settings-label">Glass Blur Intensity</span>
+                <input type="range" id="blur-slider" min="0" max="40" value="20" style="width:100%;" oninput="applyBlur(this.value)" onchange="saveSettings()">
+            </div>
+            <button class="theme-btn" style="width: 100%; border-color: var(--accent-primary);" onclick="resetAllSettings()">Reset All</button>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    function closeEnterScreen() {
+        const screen = document.getElementById('enter-screen');
+        if (screen) {
+            screen.classList.add('fade-out');
+        }
+    }
+    setTimeout(closeEnterScreen, 3000);
+
+    window.onload = function() {
+        loadSettings();
+        const lastPage = localStorage.getItem('lastVisitedPage') || 'home';
+        showPage(lastPage);
+    };
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById(pageId);
+        if (target) {
+            target.classList.add('active');
+            localStorage.setItem('lastVisitedPage', pageId);
+        }
+    }
+
+    function updateText() {
+        const mark = document.getElementById("mark").value;
+        const input = document.getElementById("input").value;
+        let result = "";
+        // FIX: Nur Zeichen hinzufügen, wenn es nicht das letzte ist
+        for (let i = 0; i < input.length; i++) {
+            result += input[i];
+            if (i < input.length - 1) {
+                result += mark;
+            }
+        }
+        document.getElementById("output").value = result;
+        document.getElementById("preview-display").innerText = result || "Preview";
+
+        const len = input.length;
+        document.getElementById("char-count").innerText = `Length: ${len}`;
+        const status = document.getElementById("epic-status");
+        if(len >= 3 && len <= 16) {
+            status.innerText = "Epic Games: OK";
+            status.className = "status-ok";
+        } else {
+            status.innerText = "Epic Games: 3-16 chars required";
+            status.className = "status-warn";
+        }
+
+        if(document.getElementById('autocopy-toggle').checked && result.length > 0) {
+            navigator.clipboard.writeText(result);
+        }
+    }
+
+    function transformText(type) {
+        const input = document.getElementById("input");
+        let val = input.value;
+        if(type === 'upper') val = val.toUpperCase();
+        if(type === 'lower') val = val.toLowerCase();
+        if(type === 'sponge') val = val.split('').map((c, i) => i % 2 === 0 ? c.toLowerCase() : c.toUpperCase()).join('');
+        if(type === 'reverse') val = val.split('').reverse().join('');
+        input.value = val;
+        updateText();
+    }
+
+    function setTheme(themeName) {
+        if(themeName === 'default') document.documentElement.removeAttribute('data-theme');
+        else document.documentElement.setAttribute('data-theme', themeName);
+        localStorage.setItem('savedTheme', themeName);
+    }
+
+    function applyBlur(val) { document.documentElement.style.setProperty('--blur-val', val + 'px'); }
+    function applyFont(font) { document.documentElement.style.setProperty('--font-main', font); }
+
+    function toggleAnimations() {
+        const enabled = document.getElementById('anim-toggle').checked;
+        if (enabled) document.body.classList.remove('no-animations');
+        else document.body.classList.add('no-animations');
+        saveSettings();
+    }
+
+    function resetAllSettings() {
+        if(confirm("Alles zurücksetzen?")) { localStorage.clear(); location.reload(); }
+    }
+
+    function saveSettings() {
+        localStorage.setItem('toastEnabled', document.getElementById('toast-toggle').checked);
+        localStorage.setItem('blurVal', document.getElementById('blur-slider').value);
+        localStorage.setItem('animEnabled', document.getElementById('anim-toggle').checked);
+        localStorage.setItem('fontChoice', document.getElementById('font-select').value);
+        localStorage.setItem('autoCopy', document.getElementById('autocopy-toggle').checked);
+    }
+
+    function loadSettings() {
+        const savedTheme = localStorage.getItem('savedTheme');
+        if(savedTheme) setTheme(savedTheme);
+        const toastEnabled = localStorage.getItem('toastEnabled');
+        if(toastEnabled !== null) document.getElementById('toast-toggle').checked = (toastEnabled === 'true');
+        const savedBlur = localStorage.getItem('blurVal');
+        if(savedBlur) { document.getElementById('blur-slider').value = savedBlur; applyBlur(savedBlur); }
+        const animEnabled = localStorage.getItem('animEnabled');
+        if(animEnabled !== null) {
+            document.getElementById('anim-toggle').checked = (animEnabled === 'true');
+            if(animEnabled === 'false') document.body.classList.add('no-animations');
+        }
+        const savedFont = localStorage.getItem('fontChoice');
+        if(savedFont) { document.getElementById('font-select').value = savedFont; applyFont(savedFont); }
+        const autoCopy = localStorage.getItem('autoCopy');
+        if(autoCopy !== null) document.getElementById('autocopy-toggle').checked = (autoCopy === 'true');
+    }
+
+    function copyToClipboard(text, element) {
+        navigator.clipboard.writeText(text).then(() => {
+            if(element) {
+                const originalBg = element.style.background;
+                element.style.background = "rgba(34, 211, 238, 0.4)";
+                setTimeout(() => { element.style.background = originalBg; }, 200);
+            }
+            if(document.getElementById('toast-toggle').checked) showToast("Kopiert!");
+        });
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById("copy-toast");
+        toast.innerText = message;
+        toast.classList.add("show");
+        setTimeout(() => { toast.classList.remove("show"); }, 2000);
+    }
+
+    function openLink(url) { window.open(url, '_blank'); }
+</script>
+
+</body>
+</html>
